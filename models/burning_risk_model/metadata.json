@@ -1,0 +1,63 @@
+{
+  "model_type": "RandomForestClassifier",
+  "component": "Model 3 - Stubble Burning Risk Prediction",
+  "training_dataset": "data/processed/burning_risk/burning_risk_spatiotemporal_processed.csv",
+  "features_used": [
+    "grid_lat",
+    "grid_lon",
+    "day_of_year",
+    "calendar_week",
+    "day_of_harvest_season",
+    "is_peak_harvest_window",
+    "lag_fire_days_past_3d",
+    "lag_fire_days_past_7d",
+    "prior_cumulative_fires"
+  ],
+  "features_removed_leakage": [
+    "season_total_fires",
+    "fire_count"
+  ],
+  "target_name": "fire_event_occurred",
+  "training_date": "2026-10-06T11:34:11.477536",
+  "random_seed": 42,
+  "evaluation_split_primary": "Spatial Grid Holdout (80% train cells / 20% unseen test cells)",
+  "evaluation_metrics_spatial_holdout": {
+    "accuracy": 0.7874,
+    "precision": 0.7202,
+    "recall": 0.7714,
+    "f1_score": 0.7449,
+    "roc_auc": 0.8612,
+    "confusion_matrix": [
+      [
+        902,
+        228
+      ],
+      [
+        174,
+        587
+      ]
+    ],
+    "train_rows": 7625,
+    "test_rows": 1891
+  },
+  "evaluation_metrics_chronological_time_split": {
+    "description": "Forward chronological split (Train: Oct 1 - Nov 10; Test: Nov 11 - Nov 30)",
+    "accuracy": 0.6006,
+    "precision": 0.625,
+    "recall": 0.004,
+    "f1_score": 0.008,
+    "roc_auc": 0.4506,
+    "note": "Decision tree fails to extrapolate on unseen future calendar day integers (day_of_year > 314)."
+  },
+  "feature_importances": {
+    "lag_fire_days_past_7d": 0.2394,
+    "lag_fire_days_past_3d": 0.1819,
+    "day_of_year": 0.1392,
+    "day_of_harvest_season": 0.1348,
+    "prior_cumulative_fires": 0.1099,
+    "grid_lon": 0.0767,
+    "grid_lat": 0.07,
+    "calendar_week": 0.0367,
+    "is_peak_harvest_window": 0.0114
+  }
+}

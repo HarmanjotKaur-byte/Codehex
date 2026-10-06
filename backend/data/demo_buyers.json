@@ -1,0 +1,99 @@
+[
+  {
+    "_comment": "DEMO MARKETPLACE DATA ONLY. NOT ML TRAINING DATA.",
+    "buyer_id": "BUYER-LDH-01",
+    "buyer_name": "Ludhiana Bio-Pellet Manufacturing Ltd",
+    "latitude": 30.9010,
+    "longitude": 75.8573,
+    "offered_price": 2150.0,
+    "capacity_tonnes": 500.0,
+    "is_available": true,
+    "contact_number": "+91 98765 43210",
+    "district": "Ludhiana",
+    "state": "Punjab"
+  },
+  {
+    "buyer_id": "BUYER-PTL-02",
+    "buyer_name": "Patiala Green Fuel Briquetting Works",
+    "latitude": 30.3398,
+    "longitude": 76.3869,
+    "offered_price": 2050.0,
+    "capacity_tonnes": 350.0,
+    "is_available": true,
+    "contact_number": "+91 98123 45678",
+    "district": "Patiala",
+    "state": "Punjab"
+  },
+  {
+    "buyer_id": "BUYER-KRN-03",
+    "buyer_name": "Karnal Biomass Power & Agro Energy",
+    "latitude": 29.6857,
+    "longitude": 76.9905,
+    "offered_price": 2250.0,
+    "capacity_tonnes": 800.0,
+    "is_available": true,
+    "contact_number": "+91 94160 11223",
+    "district": "Karnal",
+    "state": "Haryana"
+  },
+  {
+    "buyer_id": "BUYER-JLD-04",
+    "buyer_name": "Jalandhar Eco-Straw Processing Mills",
+    "latitude": 31.3260,
+    "longitude": 75.5762,
+    "offered_price": 1950.0,
+    "capacity_tonnes": 250.0,
+    "is_available": true,
+    "contact_number": "+91 98722 33445",
+    "district": "Jalandhar",
+    "state": "Punjab"
+  },
+  {
+    "buyer_id": "BUYER-BTI-05",
+    "buyer_name": "Bathinda Thermal Biomass Co-firing Hub",
+    "latitude": 30.2110,
+    "longitude": 74.9455,
+    "offered_price": 2300.0,
+    "capacity_tonnes": 1200.0,
+    "is_available": true,
+    "contact_number": "+91 98140 55667",
+    "district": "Bathinda",
+    "state": "Punjab"
+  },
+  {
+    "buyer_id": "BUYER-AMB-06",
+    "buyer_name": "Ambala Clean Fuels & Residue Traders",
+    "latitude": 30.3782,
+    "longitude": 76.7767,
+    "offered_price": 2000.0,
+    "capacity_tonnes": 400.0,
+    "is_available": true,
+    "contact_number": "+91 97290 77889",
+    "district": "Ambala",
+    "state": "Haryana"
+  },
+  {
+    "buyer_id": "BUYER-SNG-07",
+    "buyer_name": "Sangrur Agro-Biomass Aggregators",
+    "latitude": 30.2458,
+    "longitude": 75.8421,
+    "offered_price": 2180.0,
+    "capacity_tonnes": 600.0,
+    "is_available": true,
+    "contact_number": "+91 98880 99001",
+    "district": "Sangrur",
+    "state": "Punjab"
+  },
+  {
+    "buyer_id": "BUYER-KRK-08",
+    "buyer_name": "Kurukshetra Renewable Pellets Corp",
+    "latitude": 29.9695,
+    "longitude": 76.8783,
+    "offered_price": 1920.0,
+    "capacity_tonnes": 180.0,
+    "is_available": false,
+    "contact_number": "+91 94169 44332",
+    "district": "Kurukshetra",
+    "state": "Haryana"
+  }
+]

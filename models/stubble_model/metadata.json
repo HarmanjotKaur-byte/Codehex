@@ -1,0 +1,38 @@
+{
+  "model_type": "RandomForestRegressor",
+  "component": "Model 1 - Stubble Quantity Estimation",
+  "training_dataset": "data/processed/stubble/paddy_stubble_processed.csv",
+  "features_used": [
+    "Area",
+    "State_Name",
+    "District_Name",
+    "Crop_Year",
+    "Season",
+    "district_hist_yield"
+  ],
+  "features_removed_leakage": [
+    "Production",
+    "gross_straw_tonnes",
+    "grain_yield_t_ha"
+  ],
+  "target_name": "stubble_quantity_tonnes",
+  "training_date": "2026-10-06T11:34:10.177791",
+  "random_seed": 42,
+  "train_split": "Crop_Year <= 2011",
+  "test_split": "Crop_Year > 2011",
+  "train_rows": 2049,
+  "test_rows": 363,
+  "evaluation_metrics": {
+    "MAE_tonnes": 23705.91,
+    "RMSE_tonnes": 39046.67,
+    "R2_score": 0.9772
+  },
+  "feature_importances_aggregated": {
+    "Area": 0.9138,
+    "district_hist_yield": 0.0622,
+    "District_Name": 0.0136,
+    "Crop_Year": 0.0071,
+    "State_Name": 0.0033,
+    "Season": 0.0
+  }
+}
