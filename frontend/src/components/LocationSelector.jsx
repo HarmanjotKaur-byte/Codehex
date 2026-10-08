@@ -75,8 +75,25 @@ export default function LocationSelector({
   useEffect(() => {
     setLoadingStates(true);
     apiFetch('/api/locations/states')
-      .then(data => setStates(data))
-      .catch(console.error)
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setStates(data);
+        } else {
+          setStates([
+            { id: 'punjab', name: 'Punjab' },
+            { id: 'haryana', name: 'Haryana' },
+            { id: 'rajasthan', name: 'Rajasthan' }
+          ]);
+        }
+      })
+      .catch((err) => {
+        console.warn('Using offline state fallback:', err);
+        setStates([
+          { id: 'punjab', name: 'Punjab' },
+          { id: 'haryana', name: 'Haryana' },
+          { id: 'rajasthan', name: 'Rajasthan' }
+        ]);
+      })
       .finally(() => setLoadingStates(false));
   }, []);
 
@@ -84,8 +101,71 @@ export default function LocationSelector({
     if (selectedState?.id) {
       setLoadingDistricts(true);
       apiFetch(`/api/locations/districts?state_id=${selectedState.id}`)
-        .then(data => setDistricts(data))
-        .catch(console.error)
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            setDistricts(data);
+          } else {
+            const fallbackDistricts = {
+              punjab: [
+                { id: 'ludhiana', name: 'Ludhiana' },
+                { id: 'bathinda', name: 'Bathinda' },
+                { id: 'patiala', name: 'Patiala' },
+                { id: 'amritsar', name: 'Amritsar' },
+                { id: 'sangrur', name: 'Sangrur' },
+                { id: 'jalandhar', name: 'Jalandhar' },
+                { id: 'firozpur', name: 'Firozpur' }
+              ],
+              haryana: [
+                { id: 'karnal', name: 'Karnal' },
+                { id: 'kurukshetra', name: 'Kurukshetra' },
+                { id: 'panipat', name: 'Panipat' },
+                { id: 'ambala', name: 'Ambala' },
+                { id: 'hisar', name: 'Hisar' },
+                { id: 'rohtak', name: 'Rohtak' }
+              ],
+              rajasthan: [
+                { id: 'sri_ganganagar', name: 'Sri Ganganagar' },
+                { id: 'hanumangarh', name: 'Hanumangarh' },
+                { id: 'alwar', name: 'Alwar' },
+                { id: 'kota', name: 'Kota' },
+                { id: 'bikaner', name: 'Bikaner' }
+              ]
+            };
+            const sid = String(selectedState.id).toLowerCase();
+            setDistricts(fallbackDistricts[sid] || fallbackDistricts['punjab']);
+          }
+        })
+        .catch((err) => {
+          console.warn('Using offline district fallback:', err);
+          const fallbackDistricts = {
+            punjab: [
+              { id: 'ludhiana', name: 'Ludhiana' },
+              { id: 'bathinda', name: 'Bathinda' },
+              { id: 'patiala', name: 'Patiala' },
+              { id: 'amritsar', name: 'Amritsar' },
+              { id: 'sangrur', name: 'Sangrur' },
+              { id: 'jalandhar', name: 'Jalandhar' },
+              { id: 'firozpur', name: 'Firozpur' }
+            ],
+            haryana: [
+              { id: 'karnal', name: 'Karnal' },
+              { id: 'kurukshetra', name: 'Kurukshetra' },
+              { id: 'panipat', name: 'Panipat' },
+              { id: 'ambala', name: 'Ambala' },
+              { id: 'hisar', name: 'Hisar' },
+              { id: 'rohtak', name: 'Rohtak' }
+            ],
+            rajasthan: [
+              { id: 'sri_ganganagar', name: 'Sri Ganganagar' },
+              { id: 'hanumangarh', name: 'Hanumangarh' },
+              { id: 'alwar', name: 'Alwar' },
+              { id: 'kota', name: 'Kota' },
+              { id: 'bikaner', name: 'Bikaner' }
+            ]
+          };
+          const sid = String(selectedState.id).toLowerCase();
+          setDistricts(fallbackDistricts[sid] || fallbackDistricts['punjab']);
+        })
         .finally(() => setLoadingDistricts(false));
     } else {
       setDistricts([]);
