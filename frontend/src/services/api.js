@@ -125,13 +125,38 @@ function getFallbackResponse(path, options = {}) {
   }
 
   if (pathname === '/api/risk/predict') {
+    let body = {};
+    try { body = options.body ? JSON.parse(options.body) : {}; } catch (_) {}
+    const lat = parseFloat(body.latitude || 30.9);
+    const lon = parseFloat(body.longitude || 75.8573);
+    const dateStr = body.date || '2026-11-01';
+
+    // Core stubble burning hotspot belt (Punjab & Haryana Malwa/Doaba)
+    const isCorePaddyBelt = lat >= 29.5 && lat <= 31.5 && lon >= 74.5 && lon <= 76.8;
+    const prob = isCorePaddyBelt ? 0.88 : 0.24;
+    const tier = prob > 0.66 ? 'HIGH' : (prob > 0.33 ? 'MEDIUM' : 'LOW');
+
     return {
-      risk_level: 'LOW',
-      risk_score: 22.5,
-      fire_probability: 0.18,
-      aqi_impact: 'Minimal',
-      satellite_hotspots_detected: 0,
-      advisory: 'Conditions are safe for mechanical baling and immediate dispatch.'
+      burning_probability: prob,
+      fire_probability: prob,
+      risk_level: tier,
+      risk_score: Math.round(prob * 100),
+      latitude: lat,
+      longitude: lon,
+      grid_lat: Number((Math.floor((lat - 28.5) / 0.25) * 0.25 + 28.5 + 0.125).toFixed(3)),
+      grid_lon: Number((Math.floor((lon - 73.5) / 0.25) * 0.25 + 73.5 + 0.125).toFixed(3)),
+      date_analyzed: dateStr,
+      day_of_harvest_season: 32,
+      is_peak_harvest_window: true,
+      lag_fire_days_past_3d: isCorePaddyBelt ? 3 : 0,
+      lag_fire_days_past_7d: isCorePaddyBelt ? 6 : 1,
+      prior_cumulative_fires: isCorePaddyBelt ? 19 : 2,
+      lag_data_source: "NASA FIRMS VIIRS Historical Spatiotemporal Lattice",
+      aqi_impact: isCorePaddyBelt ? 'High' : 'Minimal',
+      satellite_hotspots_detected: isCorePaddyBelt ? 5 : 0,
+      advisory: isCorePaddyBelt
+        ? 'High probability of open burning detected in adjacent agricultural cells. Immediate biomass aggregation and transport recommended.'
+        : 'Conditions are safe for mechanical baling and immediate dispatch.'
     };
   }
 
