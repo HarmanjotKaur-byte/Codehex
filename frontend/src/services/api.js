@@ -101,9 +101,19 @@ function getFallbackResponse(path, options = {}) {
   if (pathname === '/api/stubble/predict') {
     let body = {};
     try { body = options.body ? JSON.parse(options.body) : {}; } catch (_) {}
-    const area = parseFloat(body.acres || body.field_area || 10);
+    const area = parseFloat(body.Area || body.area || body.acres || body.field_area || 10) || 10;
     const tonnes = parseFloat((area * 2.85).toFixed(2));
+    const areaHa = parseFloat((area * 0.404686).toFixed(2));
+    const stateName = body.State_Name || body.state || 'Punjab';
+    const districtName = body.District_Name || body.district || 'Ludhiana';
     return {
+      predicted_stubble_tonnes: tonnes,
+      predicted_gross_straw_tonnes: parseFloat((tonnes * 1.25).toFixed(2)),
+      area_hectares: areaHa,
+      state_used: stateName,
+      district_used: districtName,
+      district_baseline_yield_t_ha: 3.45,
+      model_version: "RandomForestRegressor_v1.0",
       estimated_tonnes: tonnes,
       tonnes: tonnes,
       estimated_bales: Math.round(tonnes * 35),

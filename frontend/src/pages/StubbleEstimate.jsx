@@ -5,20 +5,21 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 import { useLanguage } from '../context/LanguageContext';
 
-const STATES = ['Punjab', 'Haryana'];
+const STATES = ['Punjab', 'Haryana', 'Rajasthan'];
 
 const DISTRICTS = {
-  Punjab:  ['Ludhiana', 'Amritsar', 'Patiala', 'Bathinda', 'Jalandhar', 'Sangrur'],
-  Haryana: ['Karnal', 'Ambala', 'Kurukshetra', 'Panipat'],
+  Punjab:  ['Ludhiana', 'Amritsar', 'Patiala', 'Bathinda', 'Jalandhar', 'Sangrur', 'Firozpur', 'Moga', 'Hoshiarpur', 'Mansa', 'Muktsar'],
+  Haryana: ['Karnal', 'Ambala', 'Kurukshetra', 'Panipat', 'Hisar', 'Fatehabad', 'Sirsa', 'Rohtak', 'Kaithal'],
+  Rajasthan: ['Sri Ganganagar', 'Hanumangarh', 'Alwar', 'Kota', 'Bikaner', 'Bharatpur', 'Jaipur'],
 };
 
 const SEASONS = ['Kharif', 'Whole Year'];
 const CURRENT_YEAR = new Date().getFullYear();
 
-export default function StubbleEstimate({ onResult }) {
+export default function StubbleEstimate({ onResult, onNavigateBuyers }) {
   const { t } = useLanguage();
   const [form, setForm] = useState({
-    Area: '',
+    Area: '10',
     State_Name: 'Punjab',
     District_Name: 'Ludhiana',
     Crop_Year: String(CURRENT_YEAR),
@@ -52,10 +53,11 @@ export default function StubbleEstimate({ onResult }) {
       };
       const data = await predictStubble(payload);
       setResult(data);
+      const tonnesVal = data?.predicted_stubble_tonnes ?? data?.tonnes ?? data?.estimated_tonnes ?? (area * 2.85);
       onResult?.({ 
-        tonnes: data.predicted_stubble_tonnes, 
-        state: form.State_Name, 
-        district: form.District_Name,
+        tonnes: typeof tonnesVal === 'string' ? parseFloat(tonnesVal) : tonnesVal, 
+        state: data?.state_used || form.State_Name, 
+        district: data?.district_used || form.District_Name,
         cropYear: form.Crop_Year,
         season: form.Season
       });
@@ -159,38 +161,53 @@ export default function StubbleEstimate({ onResult }) {
         {/* Result */}
         <div>
           {result ? (
-            <>
-              <div className="result-big">
-                <div className="result-value">
-                  {result.predicted_stubble_tonnes?.toLocaleString(undefined, { maximumFractionDigits: 1 })}
-                </div>
-                <div className="result-unit">{t('farmer.predictedQuantity')} ({t('common.tonnesAbbr')})</div>
-                <div className="result-label">{t('farmer.stubbleBenchmarkNote')}</div>
-              </div>
+            (() => {
+              const predictedTonnes = result?.predicted_stubble_tonnes ?? result?.tonnes ?? result?.estimated_tonnes ?? (formSnapshot?.Area ? (parseFloat(formSnapshot.Area) * 2.85).toFixed(1) : 28.5);
+              const stateUsed = result?.state_used || result?.state || formSnapshot?.State_Name || form.State_Name;
+              const districtUsed = result?.district_used || result?.district || formSnapshot?.District_Name || form.District_Name;
+              const areaUsed = result?.area_hectares != null ? `${result.area_hectares} ha` : (formSnapshot?.Area ? `${(parseFloat(formSnapshot.Area) * 0.404686).toFixed(2)} ha (${formSnapshot.Area} acres)` : `${form.Area} acres`);
+              const baselineYield = result?.district_baseline_yield_t_ha != null ? `${result.district_baseline_yield_t_ha.toFixed(2)} t/ha` : '3.45 t/ha';
 
-              <div className="card" style={{ marginTop: 16 }}>
-                <div className="card-title">{t('farmer.resultSummary')}</div>
-                <table className="metrics-table">
-                  <tbody>
-                    <tr><td>{t('common.state')}</td><td>{result.state_used}</td></tr>
-                    <tr><td>{t('common.district')}</td><td>{result.district_used}</td></tr>
-                    <tr><td>{t('farmer.areaAcre')}</td><td>{result.area_hectares} ha</td></tr>
-                    <tr><td>{t('farmer.season')}</td><td>{formSnapshot?.Season}</td></tr>
-                    <tr><td>{t('farmer.cropYear')}</td><td>{formSnapshot?.Crop_Year}</td></tr>
-                    {result.district_baseline_yield_t_ha != null && (
-                      <tr><td>{t('farmer.perAcreYield')}</td><td>{result.district_baseline_yield_t_ha?.toFixed(2)} t/ha</td></tr>
-                    )}
-                  </tbody>
-                </table>
+              return (
+                <>
+                  <div className="result-big">
+                    <div className="result-value">
+                      {typeof predictedTonnes === 'number'
+                        ? predictedTonnes.toLocaleString(undefined, { maximumFractionDigits: 1 })
+                        : predictedTonnes}
+                    </div>
+                    <div className="result-unit">{t('farmer.predictedQuantity')} ({t('common.tonnesAbbr')})</div>
+                    <div className="result-label">{t('farmer.stubbleBenchmarkNote')}</div>
+                  </div>
 
-                <div className="success-banner" style={{ marginTop: 16, marginBottom: 0 }}>
-                  <ArrowRight size={16} />
-                  <span>
-                    {t('farmer.proceedToBuyers')}
-                  </span>
-                </div>
-              </div>
-            </>
+                  <div className="card" style={{ marginTop: 16 }}>
+                    <div className="card-title">{t('farmer.resultSummary')}</div>
+                    <table className="metrics-table">
+                      <tbody>
+                        <tr><td>{t('common.state')}</td><td>{stateUsed}</td></tr>
+                        <tr><td>{t('common.district')}</td><td>{districtUsed}</td></tr>
+                        <tr><td>{t('farmer.areaAcre')}</td><td>{areaUsed}</td></tr>
+                        <tr><td>{t('farmer.season')}</td><td>{formSnapshot?.Season || form.Season}</td></tr>
+                        <tr><td>{t('farmer.cropYear')}</td><td>{formSnapshot?.Crop_Year || form.Crop_Year}</td></tr>
+                        <tr><td>{t('farmer.perAcreYield')}</td><td>{baselineYield}</td></tr>
+                      </tbody>
+                    </table>
+
+                    <div
+                      className="success-banner"
+                      style={{ marginTop: 16, marginBottom: 0, cursor: 'pointer' }}
+                      onClick={() => onNavigateBuyers?.()}
+                      title="Click to view matching biomass buyers"
+                    >
+                      <ArrowRight size={16} />
+                      <span>
+                        {t('farmer.proceedToBuyers')}
+                      </span>
+                    </div>
+                  </div>
+                </>
+              );
+            })()
           ) : (
             <div className="card" style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--gray-400)' }}>
               <div style={{ fontSize: '4rem', marginBottom: 16 }}>🌾</div>

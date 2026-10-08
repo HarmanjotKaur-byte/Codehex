@@ -128,7 +128,7 @@ function MainApp() {
         case 'dashboard':
           return <Dashboard setTab={setTab} />;
         case 'stubble':
-          return <StubbleEstimate onResult={(r) => setStubbleResult(r)} />;
+          return <StubbleEstimate onResult={(r) => setStubbleResult(r)} onNavigateBuyers={() => setTab('buyers')} />;
         case 'risk':
           return (
             <BurningRisk
