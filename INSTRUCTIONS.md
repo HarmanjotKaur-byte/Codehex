@@ -5,7 +5,7 @@ Please read all the instructions carefully before submitting your prototype.
 
 **1. Submission Deadline**
 
-- The repository will remain open for submissions until 8 October, 11:50 AM.
+- The repository will remain open for submissions until 8 October, 11:50 PM.
 - The repository will be closed immediately after the deadline.
 - Once the repository is closed, participants will lose access to the GitHub submission repository.
 - Make sure your final submission is pushed before the deadline.
@@ -74,7 +74,7 @@ Violation of the Code of Conduct may lead to appropriate action, including disqu
 
 **✅ Final Submission Checklist**
 
-Before 8 October, 11:50 AM, confirm that:
+Before 8 October, 11:50 PM, confirm that:
 
 - [ ] Final prototype has been uploaded.
 - [ ] Prototype is completely runnable.
@@ -88,7 +88,7 @@ Before 8 October, 11:50 AM, confirm that:
 
 **⚠️ Important Notice**
 
-Deadline: 8 October, 11:50 AM
+Deadline: 8 October, 11:50 PM
 Presentation Limit: 8 minutes
 Non-runnable prototype: May lead to disqualification
 Exceeding presentation time: Marks may be deducted
