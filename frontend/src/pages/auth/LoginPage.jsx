@@ -1,61 +1,60 @@
-import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { LogIn, AlertCircle } from 'lucide-react';
-import LoadingSpinner from '../components/LoadingSpinner';
+import React, { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
-export default function LoginPage({ onSwitchToRegister }) {
+export default function LoginPage({ onNavigateRegister, onNavigateBack }) {
   const { login } = useAuth();
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
+    setError(null);
+    if (!email || !password) {
+      setError(t('errors.requiredField'));
+      return;
+    }
 
+    setLoading(true);
     try {
-      await login(email, password);
+      await login({ email, password });
     } catch (err) {
-      setError(err.message || 'Login failed. Please verify your credentials.');
+      setError(err.message || t('auth.invalidCredentials'));
     } finally {
       setLoading(false);
     }
   };
 
-  const fillDemo = (demoEmail, demoPass) => {
+  const fillDemo = (demoEmail, demoPassword) => {
     setEmail(demoEmail);
-    setPassword(demoPass);
+    setPassword(demoPassword);
+    setError(null);
   };
 
   return (
-    <div className="auth-page-wrapper">
-      <div className="auth-card card">
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: 6 }}>🌾</div>
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--green-900)' }}>
-            Welcome to ParaliPay
-          </h2>
-          <p style={{ color: 'var(--gray-600)', fontSize: '0.88rem' }}>
-            Turn crop waste into value. Login to access your portal.
+    <div className="auth-container">
+      <div className="auth-card">
+        <div className="auth-header">
+          <div className="auth-badge">{t('auth.secureAuth')}</div>
+          <h2 className="auth-title">{t('auth.welcome')}</h2>
+          <p className="auth-subtitle">
+            {t('auth.subtitle')}
           </p>
         </div>
 
-        {error && (
-          <div className="error-box" style={{ marginBottom: 18 }}>
-            <AlertCircle size={18} />
-            <span>{error}</span>
-          </div>
-        )}
+        {error && <div className="auth-error-banner">{error}</div>}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label className="form-label">Email Address</label>
+            <label className="form-label">{t('auth.emailAddress')}</label>
             <input
               type="email"
               className="form-input"
-              placeholder="e.g. farmer@example.com"
+              placeholder="e.g. farmer@punjab.gov.in"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -63,57 +62,71 @@ export default function LoginPage({ onSwitchToRegister }) {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Password</label>
+            <label className="form-label">{t('auth.password')}</label>
             <input
               type="password"
               className="form-input"
-              placeholder="Enter your password"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
 
-          <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
-            <LogIn size={18} />
-            {loading ? 'Authenticating…' : 'Sign In'}
+          <button
+            type="submit"
+            className="btn btn-primary auth-submit-btn"
+            disabled={loading}
+          >
+            {loading ? <LoadingSpinner text={t('auth.authenticating')} /> : t('auth.signInBtn')}
           </button>
         </form>
 
-        {loading && <LoadingSpinner message="Signing in..." />}
-
-        <div style={{ textAlign: 'center', marginTop: 20, fontSize: '0.85rem' }}>
-          Don't have an account?{' '}
-          <button
-            onClick={onSwitchToRegister}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--green-700)',
-              fontWeight: 700,
-              cursor: 'pointer',
-              textDecoration: 'underline',
-            }}
-          >
-            Create an account
-          </button>
-        </div>
-
-        {/* Demo Fast Login Helper */}
-        <div className="demo-credentials-box">
-          <div style={{ fontWeight: 700, marginBottom: 8, fontSize: '0.78rem', color: '#92400e' }}>
-            ⚡ DEMO QUICK FILL:
+        <div className="demo-accounts-box">
+          <div className="demo-header">
+            <span className="demo-badge">{t('auth.quickDemo')}</span>
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          <div className="demo-grid">
             <button
               type="button"
-              className="btn btn-secondary"
-              style={{ fontSize: '0.72rem', padding: '4px 8px' }}
-              onClick={() => fillDemo('admin@paralipay.gov.in', 'Admin@ParaliPay2026')}
+              className="demo-pill"
+              onClick={() => fillDemo('e2e_farmer@punjab.in', 'SecurePassword2026!')}
             >
-              Super Admin
+              🌾 {t('roles.FARMER')}
+            </button>
+            <button
+              type="button"
+              className="demo-pill"
+              onClick={() => fillDemo('e2e_buyer@biomassenergy.com', 'SecurePassword2026!')}
+            >
+              🏭 {t('roles.BUYER')}
             </button>
           </div>
+        </div>
+
+        <div className="auth-footer">
+          <p>
+            {t('auth.noAccount')}{' '}
+            <button
+              type="button"
+              className="auth-link-btn"
+              onClick={onNavigateRegister}
+            >
+              {t('auth.createAccountBtn')}
+            </button>
+          </p>
+          {onNavigateBack && (
+            <p style={{ marginTop: '12px' }}>
+              <button
+                type="button"
+                className="auth-link-btn"
+                style={{ color: '#6b7280', fontSize: '13px' }}
+                onClick={onNavigateBack}
+              >
+                ← Back to Role Selection
+              </button>
+            </p>
+          )}
         </div>
       </div>
     </div>

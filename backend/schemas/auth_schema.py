@@ -18,6 +18,9 @@ class UserRegisterRequest(BaseModel):
     state: Optional[str] = "Punjab"
     district: Optional[str] = "Ludhiana"
     village: Optional[str] = None
+    state_id: Optional[str] = None
+    district_id: Optional[str] = None
+    village_id: Optional[str] = None
     latitude: Optional[float] = 30.9000
     longitude: Optional[float] = 75.8573
 
@@ -79,7 +82,7 @@ class GovernmentVerificationItem(BaseModel):
     rejection_reason: Optional[str]
 
 class GovernmentApprovalRequest(BaseModel):
-    pass # No extra parameters required for approval
+    pass
 
 class GovernmentRejectionRequest(BaseModel):
     rejection_reason: str = Field(..., min_length=5, description="Reason for verification rejection")
@@ -106,11 +109,21 @@ class StubbleListingCreate(BaseModel):
     longitude: float = Field(..., ge=70.0, le=85.0)
     district: Optional[str] = "Ludhiana"
     state: Optional[str] = "Punjab"
+    village: Optional[str] = None
+    crop: Optional[str] = None
+    residue_type: Optional[str] = None
+    condition: Optional[str] = None
+    harvest_date: Optional[str] = None
     available_until: Optional[datetime] = None
 
 class StubbleListingUpdate(BaseModel):
     quantity_tonnes: Optional[float] = Field(default=None, gt=0)
     asking_price_per_tonne: Optional[float] = Field(default=None, gt=0)
+    village: Optional[str] = None
+    crop: Optional[str] = None
+    residue_type: Optional[str] = None
+    condition: Optional[str] = None
+    harvest_date: Optional[str] = None
     status: Optional[str] = None
 
 class StubbleListingResponse(BaseModel):
@@ -124,6 +137,11 @@ class StubbleListingResponse(BaseModel):
     longitude: float
     district: Optional[str]
     state: Optional[str]
+    village: Optional[str] = None
+    crop: Optional[str] = None
+    residue_type: Optional[str] = None
+    condition: Optional[str] = None
+    harvest_date: Optional[str] = None
     status: str
     created_at: datetime
     interest_count: int = 0
@@ -139,6 +157,13 @@ class BuyerInterestResponse(BaseModel):
     buyer_name: str
     buyer_business: Optional[str]
     buyer_phone: Optional[str]
+    # Farmer info (for buyer's activity view)
+    farmer_name: Optional[str] = None
+    farmer_phone: Optional[str] = None
+    farmer_email: Optional[str] = None
+    crop: Optional[str] = None
+    residue_type: Optional[str] = None
+    village: Optional[str] = None
     quantity_tonnes: float
     asking_price: float
     district: Optional[str]
@@ -146,3 +171,91 @@ class BuyerInterestResponse(BaseModel):
     message: Optional[str]
     status: str
     created_at: datetime
+
+# Farmer sees who expressed interest in their listing
+class ListingInterestView(BaseModel):
+    interest_id: int
+    listing_id: int
+    buyer_id: int
+    buyer_name: str
+    buyer_business: Optional[str]
+    buyer_phone: Optional[str]
+    message: Optional[str]
+    status: str
+    interest_date: datetime
+    listing_qty: float
+    listing_price: float
+    listing_district: Optional[str]
+
+# Farmer contacts a buyer (on-site message)
+class ContactRequestCreate(BaseModel):
+    buyer_id: Optional[Any] = None
+    message: str = ""
+    buyer_name_ref: Optional[str] = None
+    stubble_qty: Optional[float] = None
+    listing_id: Optional[int] = None
+
+class ContactRequestResponse(BaseModel):
+    id: int
+    farmer_id: int
+    farmer_name: str
+    farmer_phone: Optional[str] = None
+    farmer_email: Optional[str] = None
+    farmer_location: Optional[str] = None
+    buyer_id: Optional[int] = None
+    buyer_name_ref: Optional[str] = None
+    message: str
+    stubble_qty: Optional[float] = None
+    listing_id: Optional[int] = None
+    crop: Optional[str] = "Paddy Straw"
+    residue_type: Optional[str] = "Baled Straw"
+    price: Optional[float] = None
+    district: Optional[str] = None
+    state: Optional[str] = None
+    status: str = "INTERESTED"
+    is_read: bool = False
+    created_at: datetime
+
+
+# Buyer Permanent Registration / Verification Schemas
+class BuyerRegisterInterestRequest(BaseModel):
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+    business_name: str
+    buyer_type: str = "Biomass Aggregator"
+    preferred_material: str = "Paddy Straw Bales"
+    required_quantity_tonnes: float = 100.0
+    state: str = "Punjab"
+    district: str = "Ludhiana"
+    location_address: Optional[str] = None
+    max_distance_km: float = 100.0
+    budget_per_tonne: float = 2000.0
+    purchase_frequency: str = "Regular / Seasonal"
+    additional_requirements: Optional[str] = None
+    document_type: Optional[str] = "GSTIN Certificate"
+    document_id_number: Optional[str] = None
+    document_url: Optional[str] = None
+
+class BuyerRegisterInterestResponse(BaseModel):
+    user_id: int
+    full_name: str
+    email: str
+    phone: Optional[str] = None
+    business_name: str
+    buyer_type: str
+    preferred_material: str
+    required_quantity_tonnes: float
+    state: str
+    district: str
+    location_address: Optional[str] = None
+    max_distance_km: float
+    budget_per_tonne: float
+    purchase_frequency: str
+    additional_requirements: Optional[str] = None
+    verification_status: str
+    is_certified: bool
+    document_type: Optional[str] = None
+    document_id_number: Optional[str] = None
+    document_url: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None

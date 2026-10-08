@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: paralipay-app
+    ports:
+      - "${PORT:-8000}:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///./backend/paralipay_v3.db}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-paralipay_super_secure_jwt_secret_key_change_in_production_2026}
+      - JWT_ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=1440
+      - UPLOAD_DIR=./uploads/verification_docs
+    volumes:
+      - paralipay-data:/app/backend/data
+      - paralipay-uploads:/app/uploads
+    restart: unless-stopped
+
+volumes:
+  paralipay-data:
+  paralipay-uploads:

@@ -38,31 +38,33 @@ class StubbleService:
         # and would return the leaf minimum (~1,000 tonnes).
         # We query the model's learned district stubble density (t/ha) at a reference scale (1,000 ha)
         # and scale proportionally by the farmer's exact parcel area.
-        if area < 100.0:
-            ref_area = 1000.0
-            row_ref = pd.DataFrame([{
-                'Area': ref_area,
-                'State_Name': cleaned_state,
-                'District_Name': cleaned_district,
-                'Crop_Year': crop_year,
-                'Season': cleaned_season,
-                'district_hist_yield': district_hist_yield
-            }])
-            pred_ref = float(model.predict(row_ref)[0])
-            stubble_rate_per_ha = pred_ref / ref_area
-            predicted_stubble = round(stubble_rate_per_ha * area, 2)
-            predicted_gross_straw = round(predicted_stubble * (1.40 / (1.40 * 0.80)), 2) # gross = recoverable / 0.80
-        else:
-            row = pd.DataFrame([{
-                'Area': area,
-                'State_Name': cleaned_state,
-                'District_Name': cleaned_district,
-                'Crop_Year': crop_year,
-                'Season': cleaned_season,
-                'district_hist_yield': district_hist_yield
-            }])
-            predicted_stubble = round(float(model.predict(row)[0]), 2)
-            predicted_gross_straw = round(predicted_stubble / 0.80, 2)
+        import joblib
+        with joblib.parallel_backend("threading"):
+            if area < 100.0:
+                ref_area = 1000.0
+                row_ref = pd.DataFrame([{
+                    'Area': ref_area,
+                    'State_Name': cleaned_state,
+                    'District_Name': cleaned_district,
+                    'Crop_Year': crop_year,
+                    'Season': cleaned_season,
+                    'district_hist_yield': district_hist_yield
+                }])
+                pred_ref = float(model.predict(row_ref)[0])
+                stubble_rate_per_ha = pred_ref / ref_area
+                predicted_stubble = round(stubble_rate_per_ha * area, 2)
+                predicted_gross_straw = round(predicted_stubble * (1.40 / (1.40 * 0.80)), 2) # gross = recoverable / 0.80
+            else:
+                row = pd.DataFrame([{
+                    'Area': area,
+                    'State_Name': cleaned_state,
+                    'District_Name': cleaned_district,
+                    'Crop_Year': crop_year,
+                    'Season': cleaned_season,
+                    'district_hist_yield': district_hist_yield
+                }])
+                predicted_stubble = round(float(model.predict(row)[0]), 2)
+                predicted_gross_straw = round(predicted_stubble / 0.80, 2)
 
         return {
             "predicted_stubble_tonnes": predicted_stubble,

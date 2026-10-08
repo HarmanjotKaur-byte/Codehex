@@ -1,7 +1,4 @@
-/**
- * RiskGauge — displays fire-risk probability with colour-coded tier.
- * tier is derived server-side: LOW / MEDIUM / HIGH
- */
+import { useLanguage } from '../context/LanguageContext';
 
 function tierFromProb(prob) {
   if (prob < 0.33) return 'low';
@@ -10,14 +7,16 @@ function tierFromProb(prob) {
 }
 
 export default function RiskGauge({ probability, risk_level }) {
+  const { t } = useLanguage();
   const pct = Math.round(probability * 100);
   const tier = (risk_level || tierFromProb(probability)).toLowerCase();
+  const statusKey = tier.toUpperCase();
 
   return (
     <div className={`risk-result ${tier}`}>
       <div className="risk-prob">{pct}%</div>
       <div style={{ marginTop: 6, fontSize: '0.85rem', opacity: 0.8 }}>
-        Probability of stubble burning
+        {t('farmer.fireProbability', 'Probability of stubble burning')}
       </div>
       <div className="progress-bar-wrap" style={{ maxWidth: 280, margin: '14px auto 6px' }}>
         <div
@@ -25,7 +24,9 @@ export default function RiskGauge({ probability, risk_level }) {
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className={`risk-badge ${tier}`}>{tier} risk</span>
+      <span className={`risk-badge ${tier}`}>
+        {t(`status.${statusKey}`, `${tier} risk`)}
+      </span>
     </div>
   );
 }

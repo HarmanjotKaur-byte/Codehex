@@ -1,0 +1,365 @@
+/* ==========================================================================
+   BUYER / SELLER LOGIN PAGE - FULL-SCREEN SPLIT VIEWPORT
+   Pixel-perfect recreation of user reference image
+   ========================================================================== */
+
+.buyer-login-viewport {
+  width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  background-color: #ffffff;
+  color: #1f2937;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* --------------------------------------------------------------------------
+   LEFT PANEL: BIOMASS FACILITY & PROFESSIONAL ARTWORK
+   -------------------------------------------------------------------------- */
+.buyer-login-left-banner {
+  flex: 0 0 46%;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 60px 8%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Dark atmospheric gradient at bottom for text readability */
+.buyer-login-left-banner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.05) 0%,
+    rgba(15, 56, 44, 0.2) 40%,
+    rgba(15, 56, 44, 0.88) 75%,
+    rgba(10, 40, 30, 0.98) 100%
+  );
+  z-index: 1;
+}
+
+.buyer-banner-text-content {
+  position: relative;
+  z-index: 2;
+  max-width: 480px;
+}
+
+.buyer-banner-title {
+  font-size: clamp(28px, 3.2vw, 38px);
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.18;
+  letter-spacing: -0.5px;
+  margin: 0 0 14px 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.buyer-banner-subtitle {
+  font-size: clamp(14px, 1.2vw, 16px);
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1.55;
+  margin: 0;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* --------------------------------------------------------------------------
+   RIGHT PANEL: LOGIN FORM AREA
+   -------------------------------------------------------------------------- */
+.buyer-login-right-panel {
+  flex: 1 1 54%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 32px 6% 36px 6%;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  overflow-y: auto;
+}
+
+/* Header with Logo and Back Link */
+.buyer-login-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.buyer-login-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.buyer-login-back-btn:hover {
+  color: #065f46;
+  background-color: #f0fdf4;
+}
+
+/* Form Container */
+.buyer-login-center-wrapper {
+  max-width: 420px;
+  width: 100%;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Store Badge */
+.buyer-avatar-circle {
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  background-color: #e8f5e9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 14px rgba(22, 101, 52, 0.12);
+  overflow: hidden;
+  border: 2px solid #bbf7d0;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.buyer-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.buyer-login-title {
+  font-size: clamp(24px, 2.5vw, 29px);
+  font-weight: 800;
+  color: #0f382c;
+  letter-spacing: -0.4px;
+  margin: 0 0 8px 0;
+}
+
+.buyer-login-subtitle {
+  font-size: 14.5px;
+  color: #6b7280;
+  margin: 0 0 32px 0;
+}
+
+/* Form inputs */
+.buyer-login-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.buyer-input-group {
+  position: relative;
+  margin-bottom: 18px;
+}
+
+.buyer-input-icon-left {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.buyer-input-icon-right {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s ease;
+}
+
+.buyer-input-icon-right:hover {
+  color: #4b5563;
+}
+
+.buyer-input-field {
+  width: 100%;
+  padding: 14px 16px 14px 46px;
+  font-size: 15px;
+  color: #111827;
+  background-color: #ffffff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.buyer-input-field:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+}
+
+.buyer-input-field::placeholder {
+  color: #9ca3af;
+}
+
+/* Forgot Password link */
+.buyer-forgot-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -6px;
+  margin-bottom: 24px;
+}
+
+.buyer-forgot-btn {
+  background: none;
+  border: none;
+  color: #065f46;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s ease;
+}
+
+.buyer-forgot-btn:hover {
+  color: #047857;
+  text-decoration: underline;
+}
+
+/* Submit Login Button */
+.buyer-submit-btn {
+  width: 100%;
+  background-color: #065f46;
+  color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(6, 95, 70, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.buyer-submit-btn:hover {
+  background-color: #047857;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(6, 95, 70, 0.32);
+}
+
+.buyer-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Demo quick fill badge */
+.buyer-demo-fill-box {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: #6b7280;
+}
+
+.buyer-demo-pill {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  border-radius: 9999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.buyer-demo-pill:hover {
+  background-color: #dcfce7;
+  border-color: #86efac;
+}
+
+/* Bottom Registration Callout */
+.buyer-login-footer {
+  margin-top: 28px;
+  font-size: 14.5px;
+  color: #4b5563;
+}
+
+.buyer-register-link {
+  background: none;
+  border: none;
+  color: #065f46;
+  font-weight: 700;
+  font-size: 14.5px;
+  cursor: pointer;
+  padding: 0 0 0 6px;
+  transition: color 0.15s ease;
+}
+
+.buyer-register-link:hover {
+  color: #047857;
+  text-decoration: underline;
+}
+
+/* Error message banner */
+.buyer-error-banner {
+  width: 100%;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+/* --------------------------------------------------------------------------
+   RESPONSIVE BREAKPOINTS
+   -------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  .buyer-login-viewport {
+    flex-direction: column;
+  }
+  .buyer-login-left-banner {
+    flex: 0 0 280px;
+    padding: 30px 6%;
+  }
+  .buyer-login-right-panel {
+    padding: 30px 6%;
+  }
+}

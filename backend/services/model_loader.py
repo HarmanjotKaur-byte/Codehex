@@ -38,7 +38,12 @@ class ModelManager:
 
         if os.path.exists(stubble_path):
             self.stubble_model = joblib.load(stubble_path)
-            print(f"Loaded Model 1 from {stubble_path}")
+            # Ensure single-threaded execution on Windows to avoid WinError 5 loky process pool permissions
+            if hasattr(self.stubble_model, "named_steps") and "regressor" in self.stubble_model.named_steps:
+                self.stubble_model.named_steps["regressor"].n_jobs = 1
+            elif hasattr(self.stubble_model, "n_jobs"):
+                self.stubble_model.n_jobs = 1
+            print(f"Loaded Model 1 from {stubble_path} (n_jobs=1 configured for Windows safety)")
         else:
             raise FileNotFoundError(f"Model 1 artifact not found at {stubble_path}")
 
@@ -52,7 +57,10 @@ class ModelManager:
 
         if os.path.exists(risk_path):
             self.risk_model = joblib.load(risk_path)
-            print(f"Loaded Model 3 from {risk_path}")
+            # Ensure single-threaded execution on Windows to avoid WinError 5 loky process pool permissions
+            if hasattr(self.risk_model, "n_jobs"):
+                self.risk_model.n_jobs = 1
+            print(f"Loaded Model 3 from {risk_path} (n_jobs=1 configured for Windows safety)")
         else:
             raise FileNotFoundError(f"Model 3 artifact not found at {risk_path}")
 

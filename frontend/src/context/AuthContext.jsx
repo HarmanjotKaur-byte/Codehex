@@ -1,57 +1,90 @@
+// @refresh reset
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getCurrentUser, loginUser, registerUser, logoutUser } from '../services/api';
+import { login as apiLogin, register as apiRegister, getMe, logout as apiLogout } from '../services/api';
 
 const AuthContext = createContext(null);
 
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [token, setToken] = useState(() => localStorage.getItem('paralipay_token'));
+  const [token, setToken] = useState(localStorage.getItem('paralipay_token') || null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (token) {
-      getCurrentUser()
-        .then((user) => {
+    const fetchUser = async () => {
+      if (token) {
+        try {
+          const user = await getMe();
           setCurrentUser(user);
-        })
-        .catch(() => {
+        } catch (err) {
+          console.error('Failed to load user profile with existing token:', err);
           localStorage.removeItem('paralipay_token');
           setToken(null);
           setCurrentUser(null);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    } else {
+        }
+      } else {
+        setCurrentUser(null);
+      }
       setLoading(false);
-    }
+    };
+
+    fetchUser();
   }, [token]);
 
-  const login = async (email, password) => {
-    const res = await loginUser({ email, password });
-    localStorage.setItem('paralipay_token', res.access_token);
-    setToken(res.access_token);
-    setCurrentUser(res.user);
-    return res.user;
+  const login = async (credentials) => {
+    setLoading(true);
+    try {
+      const resp = await apiLogin(credentials);
+      localStorage.setItem('paralipay_token', resp.access_token);
+      setToken(resp.access_token);
+      setCurrentUser(resp.user);
+      setLoading(false);
+      return resp;
+    } catch (err) {
+      setLoading(false);
+      throw err;
+    }
   };
 
   const register = async (userData) => {
-    const res = await registerUser(userData);
-    localStorage.setItem('paralipay_token', res.access_token);
-    setToken(res.access_token);
-    setCurrentUser(res.user);
-    return res.user;
+    setLoading(true);
+    try {
+      const resp = await apiRegister(userData);
+      localStorage.setItem('paralipay_token', resp.access_token);
+      setToken(resp.access_token);
+      setCurrentUser(resp.user);
+      setLoading(false);
+      return resp;
+    } catch (err) {
+      setLoading(false);
+      throw err;
+    }
   };
 
   const logout = async () => {
     try {
       if (token) {
-        await logoutUser();
+        await apiLogout();
       }
-    } catch (_) {}
-    localStorage.removeItem('paralipay_token');
-    setToken(null);
-    setCurrentUser(null);
+    } catch (_) {
+      // Ignore network errors on logout
+    } finally {
+      localStorage.removeItem('paralipay_token');
+      setToken(null);
+      setCurrentUser(null);
+    }
+  };
+
+  const refreshUser = async () => {
+    if (token) {
+      try {
+        const user = await getMe();
+        setCurrentUser(user);
+        return user;
+      } catch (err) {
+        console.error('Failed to refresh user:', err);
+      }
+    }
+    return null;
   };
 
   const value = {
@@ -60,23 +93,18 @@ export function AuthProvider({ children }) {
     login,
     register,
     logout,
+    refreshUser,
     isAuthenticated: !!currentUser,
     loading,
-    refreshUser: async () => {
-      try {
-        const u = await getCurrentUser();
-        setCurrentUser(u);
-      } catch (_) {}
-    },
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+};
 
-export function useAuth() {
+export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}
+};

@@ -69,26 +69,19 @@ def require_government(current_user: User = Depends(get_current_user)) -> User:
     return current_user
 
 def require_verified_government(current_user: User = Depends(get_current_user)) -> User:
-    """Restricts access strictly to VERIFIED GOVERNMENT accounts."""
-    if current_user.role != UserRole.GOVERNMENT:
+    """Restricts access to GOVERNMENT accounts (directly active without Super Admin verification)."""
+    if current_user.role != UserRole.GOVERNMENT and current_user.role != UserRole.SUPER_ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access restricted to Government Officer accounts only."
         )
-    gov_profile = current_user.government_profile
-    if not gov_profile or gov_profile.verification_status != VerificationStatus.VERIFIED:
-        status_val = gov_profile.verification_status.value if gov_profile else "UNKNOWN"
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Government dashboard requires verified status. Current status: {status_val}"
-        )
     return current_user
 
 def require_super_admin(current_user: User = Depends(get_current_user)) -> User:
-    """Restricts access exclusively to SUPER_ADMIN role."""
-    if current_user.role != UserRole.SUPER_ADMIN:
+    """Fallback: allows Government Officers and Super Admins."""
+    if current_user.role != UserRole.SUPER_ADMIN and current_user.role != UserRole.GOVERNMENT:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access restricted exclusively to Super Administrator."
+            detail="Access restricted to authorized administrative officers."
         )
     return current_user

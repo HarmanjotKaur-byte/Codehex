@@ -3,6 +3,7 @@ import { Wheat, ArrowRight } from 'lucide-react';
 import { predictStubble } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
+import { useLanguage } from '../context/LanguageContext';
 
 const STATES = ['Punjab', 'Haryana'];
 
@@ -12,10 +13,10 @@ const DISTRICTS = {
 };
 
 const SEASONS = ['Kharif', 'Whole Year'];
-
 const CURRENT_YEAR = new Date().getFullYear();
 
 export default function StubbleEstimate({ onResult }) {
+  const { t } = useLanguage();
   const [form, setForm] = useState({
     Area: '',
     State_Name: 'Punjab',
@@ -25,8 +26,6 @@ export default function StubbleEstimate({ onResult }) {
   });
   const [loading, setLoading]         = useState(false);
   const [result, setResult]           = useState(null);
-  // FIX BUG 2: capture form values at submit so we can show Season & Crop_Year
-  // which the backend does not echo back in its response.
   const [formSnapshot, setFormSnapshot] = useState(null);
   const [error, setError]             = useState('');
 
@@ -38,10 +37,9 @@ export default function StubbleEstimate({ onResult }) {
     setResult(null);
 
     const area = parseFloat(form.Area);
-    if (!area || area <= 0) { setError('Please enter a valid field area greater than 0.'); return; }
+    if (!area || area <= 0) { setError(t('farmer.enterValidArea')); return; }
 
     setLoading(true);
-    // Snapshot form at the moment of submission
     const snapshot = { ...form, Area: area };
     setFormSnapshot(snapshot);
     try {
@@ -54,9 +52,15 @@ export default function StubbleEstimate({ onResult }) {
       };
       const data = await predictStubble(payload);
       setResult(data);
-      onResult?.({ tonnes: data.predicted_stubble_tonnes, state: form.State_Name, district: form.District_Name });
+      onResult?.({ 
+        tonnes: data.predicted_stubble_tonnes, 
+        state: form.State_Name, 
+        district: form.District_Name,
+        cropYear: form.Crop_Year,
+        season: form.Season
+      });
     } catch (err) {
-      setError(err.message || 'Prediction failed. Is the backend running?');
+      setError(err.message || t('errors.predictionFailed'));
     } finally {
       setLoading(false);
     }
@@ -67,35 +71,35 @@ export default function StubbleEstimate({ onResult }) {
   return (
     <div>
       <div className="page-header">
-        <h2>🌾 Stubble Quantity Estimator</h2>
-        <p>Enter your paddy field details to predict available stubble in tonnes.</p>
+        <h2>🌾 {t('farmer.estimateCardTitle')}</h2>
+        <p>{t('farmer.estimateCardDesc')}</p>
       </div>
 
       <div className="two-col">
         {/* Form */}
         <div className="card">
-          <div className="card-title">Field Information</div>
-          <div className="card-subtitle">All fields are required</div>
+          <div className="card-title">{t('farmer.searchParams')}</div>
+          <div className="card-subtitle">{t('farmer.adjustValues')}</div>
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label className="form-label">Field Area (hectares)</label>
+              <label className="form-label">{t('farmer.areaAcre')}</label>
               <input
                 type="number"
                 className="form-input"
-                placeholder="e.g. 5.0"
+                placeholder={t('farmer.enterArea')}
                 min="0.01"
                 step="0.01"
                 value={form.Area}
                 onChange={(e) => set('Area', e.target.value)}
                 required
               />
-              <span className="form-hint">Enter total area of your paddy field</span>
+              <span className="form-hint">{t('farmer.estimateCardDesc')}</span>
             </div>
 
             <div className="form-row">
               <div className="form-group">
-                <label className="form-label">State</label>
+                <label className="form-label">{t('common.state')}</label>
                 <select
                   className="form-select"
                   value={form.State_Name}
@@ -106,7 +110,7 @@ export default function StubbleEstimate({ onResult }) {
               </div>
 
               <div className="form-group">
-                <label className="form-label">District</label>
+                <label className="form-label">{t('common.district')}</label>
                 <select
                   className="form-select"
                   value={form.District_Name}
@@ -119,7 +123,7 @@ export default function StubbleEstimate({ onResult }) {
 
             <div className="form-row">
               <div className="form-group">
-                <label className="form-label">Crop Year</label>
+                <label className="form-label">{t('farmer.cropYear')}</label>
                 <input
                   type="number"
                   className="form-input"
@@ -131,7 +135,7 @@ export default function StubbleEstimate({ onResult }) {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Season</label>
+                <label className="form-label">{t('farmer.season')}</label>
                 <select
                   className="form-select"
                   value={form.Season}
@@ -144,11 +148,11 @@ export default function StubbleEstimate({ onResult }) {
 
             <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
               <Wheat size={18} />
-              {loading ? 'Estimating stubble…' : 'Estimate Stubble Quantity'}
+              {loading ? t('common.loading') : t('farmer.predictStubble')}
             </button>
           </form>
 
-          {loading && <LoadingSpinner message="Estimating stubble…" />}
+          {loading && <LoadingSpinner message={t('farmer.calculating')} />}
           <ErrorMessage message={error} />
         </div>
 
@@ -160,27 +164,21 @@ export default function StubbleEstimate({ onResult }) {
                 <div className="result-value">
                   {result.predicted_stubble_tonnes?.toLocaleString(undefined, { maximumFractionDigits: 1 })}
                 </div>
-                <div className="result-unit">tonnes of paddy stubble</div>
-                <div className="result-label">Estimated quantity available from your field</div>
+                <div className="result-unit">{t('farmer.predictedQuantity')} ({t('common.tonnesAbbr')})</div>
+                <div className="result-label">{t('farmer.stubbleBenchmarkNote')}</div>
               </div>
 
               <div className="card" style={{ marginTop: 16 }}>
-                <div className="card-title">Prediction Details</div>
+                <div className="card-title">{t('farmer.resultSummary')}</div>
                 <table className="metrics-table">
                   <tbody>
-                    {/* FIX BUG 2: backend returns state_used, not state */}
-                    <tr><td>State</td><td>{result.state_used}</td></tr>
-                    {/* FIX BUG 2: backend returns district_used, not district */}
-                    <tr><td>District</td><td>{result.district_used}</td></tr>
-                    {/* FIX BUG 2: backend returns area_hectares, not area_ha */}
-                    <tr><td>Area</td><td>{result.area_hectares} ha</td></tr>
-                    {/* FIX BUG 2: Season not in response — use snapshot from form */}
-                    <tr><td>Season</td><td>{formSnapshot?.Season}</td></tr>
-                    {/* FIX BUG 2: Crop_Year not in response — use snapshot from form */}
-                    <tr><td>Crop Year</td><td>{formSnapshot?.Crop_Year}</td></tr>
-                    {/* FIX BUG 2: backend returns district_baseline_yield_t_ha, not district_hist_yield */}
+                    <tr><td>{t('common.state')}</td><td>{result.state_used}</td></tr>
+                    <tr><td>{t('common.district')}</td><td>{result.district_used}</td></tr>
+                    <tr><td>{t('farmer.areaAcre')}</td><td>{result.area_hectares} ha</td></tr>
+                    <tr><td>{t('farmer.season')}</td><td>{formSnapshot?.Season}</td></tr>
+                    <tr><td>{t('farmer.cropYear')}</td><td>{formSnapshot?.Crop_Year}</td></tr>
                     {result.district_baseline_yield_t_ha != null && (
-                      <tr><td>District Yield Baseline</td><td>{result.district_baseline_yield_t_ha?.toFixed(2)} t/ha</td></tr>
+                      <tr><td>{t('farmer.perAcreYield')}</td><td>{result.district_baseline_yield_t_ha?.toFixed(2)} t/ha</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -188,8 +186,7 @@ export default function StubbleEstimate({ onResult }) {
                 <div className="success-banner" style={{ marginTop: 16, marginBottom: 0 }}>
                   <ArrowRight size={16} />
                   <span>
-                    This estimate has been shared with <strong>Find Buyers</strong>.
-                    Go to the Buyer Matching tab to find buyers for your stubble.
+                    {t('farmer.proceedToBuyers')}
                   </span>
                 </div>
               </div>
@@ -197,7 +194,7 @@ export default function StubbleEstimate({ onResult }) {
           ) : (
             <div className="card" style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--gray-400)' }}>
               <div style={{ fontSize: '4rem', marginBottom: 16 }}>🌾</div>
-              <p>Fill the form and click<br /><strong>Estimate Stubble Quantity</strong></p>
+              <p>{t('farmer.fillFormPrompt')}</p>
             </div>
           )}
         </div>

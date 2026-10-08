@@ -125,7 +125,9 @@ class BurningRiskService:
         }])
 
         model = self.manager.risk_model
-        probability = float(model.predict_proba(features_df)[0][1])
+        import joblib
+        with joblib.parallel_backend("threading"):
+            probability = float(model.predict_proba(features_df)[0][1])
 
         # Operational presentation tiers:
         # LOW: < 0.33, MEDIUM: 0.33–0.66, HIGH: > 0.66

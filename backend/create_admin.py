@@ -2,7 +2,6 @@ import os
 import sys
 import getpass
 
-# Add backend directory to path
 backend_dir = os.path.dirname(os.path.abspath(__file__))
 backend_parent = os.path.dirname(backend_dir)
 if backend_dir not in sys.path:
@@ -39,11 +38,11 @@ def create_super_admin(name=None, email=None, password=None):
         existing = db.query(User).filter(User.email == email).first()
         if existing:
             if existing.role == UserRole.SUPER_ADMIN:
-                print(f"User with email '{email}' is already a Super Admin. Updating password...")
+                print(f"User with email '{email}' is already a Super Admin. Updating credentials...")
                 existing.password_hash = hash_password(password)
                 existing.full_name = name
                 db.commit()
-                print("Super Admin password updated successfully.")
+                print("Super Admin updated successfully.")
                 return True
             else:
                 print(f"User with email '{email}' exists with role '{existing.role.value}'. Elevating to SUPER_ADMIN...")
