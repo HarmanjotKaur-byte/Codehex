@@ -5,7 +5,7 @@ import { useLanguage } from '../context/LanguageContext';
 import LanguageSelector from './LanguageSelector';
 import { LogOut, Menu, X, Wheat, User, ChevronDown } from 'lucide-react';
 
-export default function Header({ onMenuToggle, isSidebarOpen }) {
+export default function Header({ onMenuToggle, isSidebarOpen, onGoHome }) {
   const [online, setOnline] = useState(null);
   const { currentUser, logout, isAuthenticated } = useAuth();
   const { t } = useLanguage();
@@ -51,7 +51,7 @@ export default function Header({ onMenuToggle, isSidebarOpen }) {
               {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           )}
-          <div className="logo">
+          <div className="logo" onClick={onGoHome} style={onGoHome ? { cursor: 'pointer' } : {}} title={onGoHome ? 'Back to ParaliPay Home' : ''}>
             <Wheat className="logo-icon" size={28} />
             <div className="logo-text-group">
               <div className="logo-title">{t('common.appName') || 'ParaliPay'}</div>
@@ -177,7 +177,7 @@ export default function Header({ onMenuToggle, isSidebarOpen }) {
                 <button onClick={() => setIsEditingProfile(true)} className="btn btn-primary" style={{ flex: 1 }}>
                   Edit Profile
                 </button>
-                <button onClick={() => { setShowProfileModal(false); logout(); }} className="btn btn-secondary" style={{ flex: 1, color: '#dc2626', borderColor: '#fca5a5' }}>
+                <button onClick={() => { setShowProfileModal(false); logout(); onGoHome?.(); }} className="btn btn-secondary" style={{ flex: 1, color: '#dc2626', borderColor: '#fca5a5' }}>
                   <LogOut size={16} style={{ marginRight: '4px' }} /> {t('common.logout') || 'Logout'}
                 </button>
               </div>

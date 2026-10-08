@@ -13,7 +13,7 @@ import {
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 function getAuthHeader() {
-  const token = localStorage.getItem('paralipay_token');
+  const token = typeof window !== 'undefined' ? (sessionStorage.getItem('paralipay_token') || localStorage.getItem('paralipay_token')) : null;
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
@@ -50,7 +50,7 @@ function getFallbackResponse(path, options = {}) {
   }
 
   if (pathname === '/api/auth/me') {
-    const token = localStorage.getItem('paralipay_token') || '';
+    const token = typeof window !== 'undefined' ? (sessionStorage.getItem('paralipay_token') || localStorage.getItem('paralipay_token') || '') : '';
     if (token.includes('buyer')) return MOCK_BUYER_USER;
     return MOCK_FARMER_USER;
   }

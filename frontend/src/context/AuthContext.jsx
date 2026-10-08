@@ -4,9 +4,22 @@ import { login as apiLogin, register as apiRegister, getMe, logout as apiLogout 
 
 const AuthContext = createContext(null);
 
+// Clean up any stale persistent demo tokens from localStorage so fresh visits start on Landing Page
+if (typeof window !== 'undefined') {
+  try {
+    localStorage.removeItem('paralipay_token');
+  } catch (_) {}
+}
+
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('paralipay_token') || null);
+  const [token, setToken] = useState(() => {
+    try {
+      return sessionStorage.getItem('paralipay_token') || null;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -100,7 +113,8 @@ export const AuthProvider = ({ children }) => {
           }
         };
         const demoToken = "demo_farmer_jwt_token_2026";
-        localStorage.setItem('paralipay_token', demoToken);
+        sessionStorage.setItem('paralipay_token', demoToken);
+        localStorage.removeItem('paralipay_token');
         setToken(demoToken);
         setCurrentUser(demoUser);
         setLoading(false);
@@ -128,7 +142,8 @@ export const AuthProvider = ({ children }) => {
           }
         };
         const demoToken = "demo_buyer_jwt_token_2026";
-        localStorage.setItem('paralipay_token', demoToken);
+        sessionStorage.setItem('paralipay_token', demoToken);
+        localStorage.removeItem('paralipay_token');
         setToken(demoToken);
         setCurrentUser(demoUser);
         setLoading(false);
@@ -144,7 +159,8 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       const resp = await apiRegister(userData);
-      localStorage.setItem('paralipay_token', resp.access_token);
+      sessionStorage.setItem('paralipay_token', resp.access_token);
+      localStorage.removeItem('paralipay_token');
       setToken(resp.access_token);
       setCurrentUser(resp.user);
       setLoading(false);
@@ -164,7 +180,8 @@ export const AuthProvider = ({ children }) => {
         }
       };
       const fallbackToken = "registered_jwt_token_" + Date.now();
-      localStorage.setItem('paralipay_token', fallbackToken);
+      sessionStorage.setItem('paralipay_token', fallbackToken);
+      localStorage.removeItem('paralipay_token');
       setToken(fallbackToken);
       setCurrentUser(fallbackUser);
       setLoading(false);
@@ -180,6 +197,7 @@ export const AuthProvider = ({ children }) => {
     } catch (_) {
       // Ignore network errors on logout
     } finally {
+      sessionStorage.removeItem('paralipay_token');
       localStorage.removeItem('paralipay_token');
       setToken(null);
       setCurrentUser(null);

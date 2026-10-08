@@ -39,8 +39,9 @@ import BuyerMyActivity from './pages/buyer/BuyerMyActivity.jsx';
 
 
 function MainApp() {
-  const { currentUser, isAuthenticated, loading } = useAuth();
+  const { currentUser, isAuthenticated, loading, logout } = useAuth();
   const { t } = useLanguage();
+  const [hasStarted, setHasStarted] = useState(false);
   const [authView, setAuthView] = useState('landing'); // 'landing' | 'role_select' | 'login' | 'register'
   const [selectedRole, setSelectedRole] = useState('FARMER');
   const [tab, setTab] = useState('dashboard');
@@ -59,12 +60,27 @@ function MainApp() {
     );
   }
 
-  // Unauthenticated flow
+  // 1. Initial Entry: Whenever user opens or clicks the link, ALWAYS show the Landing Page first
+  if (!hasStarted) {
+    return (
+      <LandingPage 
+        onGetStarted={() => {
+          setHasStarted(true);
+          setAuthView('role_select');
+        }} 
+      />
+    );
+  }
+
+  // 2. Authentication & Onboarding Flow
   if (!isAuthenticated || !currentUser) {
     if (authView === 'landing') {
       return (
         <LandingPage 
-          onGetStarted={() => setAuthView('role_select')} 
+          onGetStarted={() => {
+            setHasStarted(true);
+            setAuthView('role_select');
+          }} 
         />
       );
     }
@@ -72,7 +88,10 @@ function MainApp() {
     if (authView === 'role_select') {
       return (
         <RoleSelectPage 
-          onBack={() => setAuthView('landing')}
+          onBack={() => {
+            setHasStarted(false);
+            setAuthView('landing');
+          }}
           onSelectRole={(role) => {
             setSelectedRole(role);
             setAuthView('login');
@@ -101,7 +120,7 @@ function MainApp() {
 
     return (
       <div className="app-root">
-        <Header />
+        <Header onGoHome={() => { setHasStarted(false); setAuthView('landing'); }} />
         <main className="page-wrapper">
           {authView === 'login' ? (
             <LoginPage 
@@ -186,7 +205,7 @@ function MainApp() {
   
     return (
       <div className="app-layout">
-        <Header onMenuToggle={() => setSidebarOpen(!sidebarOpen)} isSidebarOpen={sidebarOpen} />
+        <Header onMenuToggle={() => setSidebarOpen(!sidebarOpen)} isSidebarOpen={sidebarOpen} onGoHome={() => { setHasStarted(false); setAuthView('landing'); }} />
         <div className="main-container">
           <NavBar role={currentUser.role} active={tab} onChange={setTab} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
           <div className="content-area">
