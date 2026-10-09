@@ -326,21 +326,24 @@ function haversineDistance(lat1, lon1, lat2, lon2) {
   return R * c; // km
 }
 
+const DEFAULT_NEARBY_FILTERS = {
+  crop: 'Paddy (Rice)',
+  residue_type: 'Baled Straw',
+  condition: 'Dry',
+  state: 'Punjab',
+  district: 'Ludhiana',
+  min_qty: '50',
+  max_qty: '1000',
+  max_price: '2500',
+  max_distance: '150',
+  harvest_after: '2026-09-15',
+  logistics: 'Any'
+};
+
 export default function NearbyListings() {
   const { currentUser } = useAuth();
-  const [filters, setFilters] = useState({
-    crop: '',
-    residue_type: '',
-    condition: '',
-    state: '',
-    district: '',
-    min_qty: '',
-    max_qty: '',
-    max_price: '',
-    max_distance: '150',
-    harvest_after: '',
-    logistics: 'Any'
-  });
+  // Pre-filled with realistic demo values so the demonstrator doesn't need to manually type
+  const [filters, setFilters] = useState(DEFAULT_NEARBY_FILTERS);
 
   const [coords, setCoords] = useState({ lat: null, lon: null });
   const [locationName, setLocationName] = useState('');
@@ -409,7 +412,8 @@ export default function NearbyListings() {
     );
   };
 
-  const handleSearch = async (overrideCoords = null) => {
+  const handleSearch = async (overrideCoords = null, overrideFilters = null) => {
+    const activeFilters = overrideFilters || filters;
     setLoading(true);
     setError('');
     setSearched(true);
@@ -434,55 +438,55 @@ export default function NearbyListings() {
         })
         .filter(item => {
           // State filter
-          if (filters.state && item.state && item.state.toLowerCase() !== filters.state.toLowerCase()) {
+          if (activeFilters.state && item.state && item.state.toLowerCase() !== activeFilters.state.toLowerCase()) {
             return false;
           }
           // District filter
-          if (filters.district && item.district && item.district.toLowerCase() !== filters.district.toLowerCase()) {
+          if (activeFilters.district && item.district && item.district.toLowerCase() !== activeFilters.district.toLowerCase()) {
             return false;
           }
           // Crop filter
-          if (filters.crop && item.crop && !item.crop.toLowerCase().includes(filters.crop.toLowerCase())) {
+          if (activeFilters.crop && item.crop && !item.crop.toLowerCase().includes(activeFilters.crop.toLowerCase())) {
             return false;
           }
           // Residue type filter
-          if (filters.residue_type && item.residue_type && !item.residue_type.toLowerCase().includes(filters.residue_type.toLowerCase())) {
+          if (activeFilters.residue_type && item.residue_type && !item.residue_type.toLowerCase().includes(activeFilters.residue_type.toLowerCase())) {
             return false;
           }
           // Condition filter
-          if (filters.condition && item.condition && item.condition.toLowerCase() !== filters.condition.toLowerCase()) {
+          if (activeFilters.condition && item.condition && item.condition.toLowerCase() !== activeFilters.condition.toLowerCase()) {
             return false;
           }
           // Min quantity (t)
-          if (filters.min_qty !== '' && !isNaN(Number(filters.min_qty))) {
-            if (Number(item.quantity_tonnes) < Number(filters.min_qty)) return false;
+          if (activeFilters.min_qty !== '' && !isNaN(Number(activeFilters.min_qty))) {
+            if (Number(item.quantity_tonnes) < Number(activeFilters.min_qty)) return false;
           }
           // Max quantity (t)
-          if (filters.max_qty !== '' && !isNaN(Number(filters.max_qty))) {
-            if (Number(item.quantity_tonnes) > Number(filters.max_qty)) return false;
+          if (activeFilters.max_qty !== '' && !isNaN(Number(activeFilters.max_qty))) {
+            if (Number(item.quantity_tonnes) > Number(activeFilters.max_qty)) return false;
           }
           // Max price (₹ / tonne)
-          if (filters.max_price !== '' && !isNaN(Number(filters.max_price))) {
-            if (Number(item.asking_price_per_tonne) > Number(filters.max_price)) return false;
+          if (activeFilters.max_price !== '' && !isNaN(Number(activeFilters.max_price))) {
+            if (Number(item.asking_price_per_tonne) > Number(activeFilters.max_price)) return false;
           }
           // Harvested after date filter
-          if (filters.harvest_after && item.harvest_date) {
-            if (new Date(item.harvest_date) < new Date(filters.harvest_after)) return false;
+          if (activeFilters.harvest_after && item.harvest_date) {
+            if (new Date(item.harvest_date) < new Date(activeFilters.harvest_after)) return false;
           }
           // Max distance radius
-          if (filters.max_distance && item.distance_km !== null) {
-            if (item.distance_km > Number(filters.max_distance)) return false;
+          if (activeFilters.max_distance && item.distance_km !== null) {
+            if (item.distance_km > Number(activeFilters.max_distance)) return false;
           }
           return true;
         });
 
       // If user filtered and got 0 results, dynamically generate realistic nearby farmer listings so results are ALWAYS returned!
       if (processed.length === 0) {
-        const cropChosen = filters.crop || 'Paddy (Rice)';
-        const stateChosen = filters.state || (filters.district ? (Object.keys(DISTRICTS).find(s => DISTRICTS[s].includes(filters.district)) || 'Punjab') : 'Punjab');
-        const districtChosen = filters.district || (stateChosen === 'Punjab' ? 'Ludhiana' : stateChosen === 'Haryana' ? 'Karnal' : 'Sri Ganganagar');
-        const targetPrice = filters.max_price ? parseFloat(filters.max_price) : 2100;
-        const targetQty = filters.min_qty ? parseFloat(filters.min_qty) : 250;
+        const cropChosen = activeFilters.crop || 'Paddy (Rice)';
+        const stateChosen = activeFilters.state || (activeFilters.district ? (Object.keys(DISTRICTS).find(s => DISTRICTS[s].includes(activeFilters.district)) || 'Punjab') : 'Punjab');
+        const districtChosen = activeFilters.district || (stateChosen === 'Punjab' ? 'Ludhiana' : stateChosen === 'Haryana' ? 'Karnal' : 'Sri Ganganagar');
+        const targetPrice = activeFilters.max_price ? parseFloat(activeFilters.max_price) : 2100;
+        const targetQty = activeFilters.min_qty ? parseFloat(activeFilters.min_qty) : 250;
 
         processed = [
           {
@@ -568,23 +572,19 @@ export default function NearbyListings() {
   };
 
   const handleReset = () => {
-    setFilters({
-      crop: '',
-      residue_type: '',
-      condition: '',
-      state: '',
-      district: '',
-      min_qty: '',
-      max_qty: '',
-      max_price: '',
-      max_distance: '100',
-      harvest_after: '',
-      logistics: 'Any'
-    });
+    setFilters(DEFAULT_NEARBY_FILTERS);
     setCoords(DISTRICT_COORDS['Ludhiana']);
     setLocationName('Ludhiana, Punjab');
-    setLocStatus('Reset to default');
-    handleSearch();
+    setLocStatus('Reset to demo defaults');
+    handleSearch(DISTRICT_COORDS['Ludhiana'], DEFAULT_NEARBY_FILTERS);
+  };
+
+  const handleAutofillDemo = () => {
+    setFilters(DEFAULT_NEARBY_FILTERS);
+    setCoords(DISTRICT_COORDS['Ludhiana']);
+    setLocationName('Ludhiana, Punjab');
+    setLocStatus('Auto-filled demo parameters');
+    handleSearch(DISTRICT_COORDS['Ludhiana'], DEFAULT_NEARBY_FILTERS);
   };
 
   const handleToggleSave = listing => {
@@ -647,13 +647,35 @@ export default function NearbyListings() {
         
         {/* LEFT COLUMN: Location & Preference Controls */}
         <div className="card" style={{ padding: 0, borderRadius: 14, overflow: 'hidden', border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', background: '#fff' }}>
-          <div style={{ background: 'linear-gradient(135deg, #15803d, #16a34a)', padding: '16px 20px', color: '#fff' }}>
-            <h3 style={{ margin: 0, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8, color: '#fff' }}>
-              <Navigation size={18} /> Location & Search Filters
-            </h3>
-            <p style={{ margin: '4px 0 0 0', fontSize: 12, opacity: 0.9 }}>
-              Customize radius & residue criteria
-            </p>
+          <div style={{ background: 'linear-gradient(135deg, #15803d, #16a34a)', padding: '16px 20px', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8, color: '#fff' }}>
+                <Navigation size={18} /> Location & Search Filters
+              </h3>
+              <p style={{ margin: '4px 0 0 0', fontSize: 12, opacity: 0.9 }}>
+                Customize radius & residue criteria
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleAutofillDemo}
+              style={{
+                background: '#ffffff',
+                border: '1px solid #86efac',
+                color: '#15803d',
+                borderRadius: 20,
+                padding: '4px 10px',
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4
+              }}
+              title="Auto-fill demo criteria for presentation"
+            >
+              ⚡ Autofill Demo
+            </button>
           </div>
 
           <div style={{ padding: '20px' }}>
@@ -806,25 +828,35 @@ export default function NearbyListings() {
             </div>
 
             {/* Action Buttons */}
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={handleReset}
-                style={{ flex: 1, padding: '10px 14px', fontSize: 13 }}
-              >
-                Reset
-              </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <button
                 type="button"
                 className="btn btn-primary"
-                onClick={handleSearch}
+                onClick={() => handleSearch()}
                 disabled={loading}
-                style={{ flex: 2, padding: '10px 16px', fontSize: 13, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6 }}
+                style={{ width: '100%', padding: '10px 16px', fontSize: 13, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6 }}
               >
                 <Search size={15} />
                 {loading ? 'Searching Farmers...' : 'Search Farmers'}
               </button>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleAutofillDemo}
+                  style={{ flex: 1, padding: '8px 12px', fontSize: 12, color: '#15803d', borderColor: '#86efac', background: '#f0fdf4', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 4 }}
+                >
+                  ⚡ Autofill Demo
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleReset}
+                  style={{ flex: 1, padding: '8px 12px', fontSize: 12 }}
+                >
+                  Reset
+                </button>
+              </div>
             </div>
           </div>
         </div>

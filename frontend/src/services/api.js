@@ -189,8 +189,36 @@ function getFallbackResponse(path, options = {}) {
       {
         id: 1,
         listing_id: 1,
-        status: "ACCEPTED",
+        farmer_name: "Harmanpreet Singh Brar",
+        farmer_phone: "+91 98150 24680",
+        crop: "Paddy (Rice)",
+        residue_type: "Baled Straw",
+        quantity_tonnes: 380.0,
+        asking_price: 2150.0,
+        asking_price_per_tonne: 2150.0,
+        district: "Ludhiana",
+        state: "Punjab",
+        village: "Jagraon",
+        status: "CONFIRMED",
+        created_at: new Date(Date.now() - 2 * 86400000).toISOString(),
         message: "We have reviewed your 380 tonnes lot in Jagraon. We can deploy 4 semi-trailers starting this Monday. Gate price offered at ₹2,150/tonne."
+      },
+      {
+        id: 2,
+        listing_id: 2,
+        farmer_name: "Balwinder Singh Sidhu",
+        farmer_phone: "+91 98142 33411",
+        crop: "Cotton",
+        residue_type: "Cotton Stalks",
+        quantity_tonnes: 210.0,
+        asking_price: 1850.0,
+        asking_price_per_tonne: 1850.0,
+        district: "Bathinda",
+        state: "Punjab",
+        village: "Talwandi Sabo",
+        status: "PENDING",
+        created_at: new Date(Date.now() - 1 * 86400000).toISOString(),
+        message: "Inquiry sent for 210 tonnes cotton stalks. Awaiting logistics schedule."
       }
     ];
   }

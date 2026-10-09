@@ -53,32 +53,35 @@ export default function RegisterInterest() {
   const [hasRegistered, setHasRegistered] = useState(false);
   const [savedData, setSavedData] = useState(null);
 
-  // Form State containing only the 3 sections from the image
-  const [formData, setFormData] = useState({
-    // 1. Company & Contact Details
-    businessName: '',
-    buyerType: 'Biomass Aggregator',
-    fullName: '',
-    phone: '',
-    email: '',
-
-    // 2. Biomass & Quantity Specifications
+  // Default realistic demo buyer profile for seamless video demonstration
+  const DEFAULT_BUYER_FORM = {
+    businessName: 'EverGreen Bio-Energy & CBG Plant Ltd',
+    buyerType: 'Bio-CNG & Biogas Producer',
+    fullName: 'Vikramaditya Singhania',
+    phone: '+91 98765 11223',
+    email: 'e2e_buyer@biomassenergy.com',
     preferredMaterial: 'Paddy Straw Bales',
-    requiredQuantityTonnes: 100,
+    requiredQuantityTonnes: 6500,
     purchaseFrequency: 'Regular / Seasonal',
-
-    // 3. Preferred Sourcing Location & Budget
     state: 'Punjab',
     district: 'Ludhiana',
-    maxDistanceKm: 100,
-    budgetPerTonne: 2000,
-    locationAddress: ''
-  });
+    maxDistanceKm: 120,
+    budgetPerTonne: 2350,
+    locationAddress: 'GT Road Industrial Area, Focal Point Phase-V, Ludhiana, Punjab'
+  };
+
+  // Form State containing only the 3 sections from the image — prefilled with realistic demo values
+  const [formData, setFormData] = useState(DEFAULT_BUYER_FORM);
 
   const showToast = (msg, type = 'success') => {
     setToastMessage(msg);
     setToastType(type);
     setTimeout(() => setToastMessage(''), 4500);
+  };
+
+  const handleAutofillDemo = () => {
+    setFormData(DEFAULT_BUYER_FORM);
+    showToast('Demo buyer details auto-filled successfully!', 'success');
   };
 
   // Load existing profile from backend
@@ -92,19 +95,19 @@ export default function RegisterInterest() {
         setSavedData(data);
 
         setFormData({
-          businessName: data.business_name || (currentUser?.full_name ? `${currentUser.full_name}'s Enterprise` : ''),
-          buyerType: data.buyer_type || 'Biomass Aggregator',
-          fullName: data.full_name || currentUser?.full_name || '',
-          phone: data.phone || currentUser?.phone || '',
-          email: data.email || currentUser?.email || '',
-          preferredMaterial: data.preferred_material || 'Paddy Straw Bales',
-          requiredQuantityTonnes: data.required_quantity_tonnes || 100,
-          purchaseFrequency: data.purchase_frequency || 'Regular / Seasonal',
-          state: data.state || 'Punjab',
-          district: data.district || 'Ludhiana',
-          maxDistanceKm: data.max_distance_km || 100,
-          budgetPerTonne: data.budget_per_tonne || 2000,
-          locationAddress: data.location_address || ''
+          businessName: data.business_name || DEFAULT_BUYER_FORM.businessName,
+          buyerType: data.buyer_type || DEFAULT_BUYER_FORM.buyerType,
+          fullName: data.full_name || currentUser?.full_name || DEFAULT_BUYER_FORM.fullName,
+          phone: data.phone || currentUser?.phone || DEFAULT_BUYER_FORM.phone,
+          email: data.email || currentUser?.email || DEFAULT_BUYER_FORM.email,
+          preferredMaterial: data.preferred_material || DEFAULT_BUYER_FORM.preferredMaterial,
+          requiredQuantityTonnes: data.required_quantity_tonnes || DEFAULT_BUYER_FORM.requiredQuantityTonnes,
+          purchaseFrequency: data.purchase_frequency || DEFAULT_BUYER_FORM.purchaseFrequency,
+          state: data.state || DEFAULT_BUYER_FORM.state,
+          district: data.district || DEFAULT_BUYER_FORM.district,
+          maxDistanceKm: data.max_distance_km || DEFAULT_BUYER_FORM.maxDistanceKm,
+          budgetPerTonne: data.budget_per_tonne || DEFAULT_BUYER_FORM.budgetPerTonne,
+          locationAddress: data.location_address || DEFAULT_BUYER_FORM.locationAddress
         });
 
         // If user is already registered, close form by default and show the registered confirmation view
@@ -116,13 +119,7 @@ export default function RegisterInterest() {
       }
     } catch (err) {
       console.error('Failed to load profile:', err);
-      setFormData(prev => ({
-        ...prev,
-        fullName: currentUser?.full_name || '',
-        email: currentUser?.email || '',
-        phone: currentUser?.phone || '',
-        businessName: currentUser?.full_name ? `${currentUser.full_name}'s Enterprise` : ''
-      }));
+      setFormData(DEFAULT_BUYER_FORM);
       setIsFormOpen(true);
     } finally {
       setLoading(false);
@@ -476,30 +473,52 @@ export default function RegisterInterest() {
             boxShadow: 'var(--shadow-sm)'
           }}
         >
-          {/* Header row when editing existing registration */}
-          {hasRegistered && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingBottom: 14, borderBottom: '1px solid #f3f4f6' }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--gray-700)' }}>
-                Editing Buyer Registration
-              </span>
+          {/* Header row with Autofill Demo Details button */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingBottom: 14, borderBottom: '1px solid #f3f4f6', flexWrap: 'wrap', gap: 10 }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--gray-800)' }}>
+              {hasRegistered ? 'Editing Buyer Registration' : 'Buyer Profile & Procurement Requirements'}
+            </span>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <button
                 type="button"
-                onClick={() => setIsFormOpen(false)}
+                onClick={handleAutofillDemo}
                 style={{
                   padding: '6px 14px',
-                  background: '#f3f4f6',
-                  border: '1px solid #d1d5db',
-                  borderRadius: 6,
+                  background: '#f0fdf4',
+                  border: '1px solid #86efac',
+                  borderRadius: 20,
                   fontSize: 12,
                   fontWeight: 600,
-                  color: 'var(--gray-700)',
-                  cursor: 'pointer'
+                  color: '#15803d',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4
                 }}
+                title="Fill realistic demo company information"
               >
-                Cancel Edit
+                ⚡ Autofill Demo Details
               </button>
+              {hasRegistered && (
+                <button
+                  type="button"
+                  onClick={() => setIsFormOpen(false)}
+                  style={{
+                    padding: '6px 14px',
+                    background: '#f3f4f6',
+                    border: '1px solid #d1d5db',
+                    borderRadius: 6,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: 'var(--gray-700)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel Edit
+                </button>
+              )}
             </div>
-          )}
+          </div>
 
           {/* ========================================================= */}
           {/* 1. Company & Contact Details                              */}
@@ -874,7 +893,26 @@ export default function RegisterInterest() {
           {/* ========================================================= */}
           {/* Submit Action: Save Registration Button                   */}
           {/* ========================================================= */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 12, borderTop: '1px solid #f3f4f6', paddingTop: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 12, borderTop: '1px solid #f3f4f6', paddingTop: 20, flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={handleAutofillDemo}
+              style={{
+                padding: '11px 20px',
+                background: '#f0fdf4',
+                border: '1px solid #86efac',
+                borderRadius: 8,
+                fontSize: 13,
+                fontWeight: 600,
+                color: '#15803d',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6
+              }}
+            >
+              ⚡ Autofill Demo Details
+            </button>
             {hasRegistered && (
               <button
                 type="button"

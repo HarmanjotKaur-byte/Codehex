@@ -1,9 +1,21 @@
 import { useState, useEffect } from 'react';
 import { Star, MapPin, Trash2, MessageCircle, Calendar, X, CheckCircle } from 'lucide-react';
 import { expressInterest, getMyInterests } from '../../services/api.js';
+import { MOCK_ALL_LISTINGS } from '../../services/mockData.js';
 
 function getSaved() {
-  try { return JSON.parse(localStorage.getItem('paralipay_saved_listings') || '[]'); } catch { return []; }
+  try {
+    const raw = localStorage.getItem('paralipay_saved_listings');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+    const defaults = [MOCK_ALL_LISTINGS[0], MOCK_ALL_LISTINGS[1]];
+    localStorage.setItem('paralipay_saved_listings', JSON.stringify(defaults));
+    return defaults;
+  } catch {
+    return [MOCK_ALL_LISTINGS[0], MOCK_ALL_LISTINGS[1]];
+  }
 }
 function removeSaved(id) {
   const updated = getSaved().filter(l => l.id !== id);

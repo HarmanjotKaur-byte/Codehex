@@ -291,14 +291,23 @@ function ContactModal({ listing, onClose, onSend, sending }) {
   );
 }
 
+const DEFAULT_FILTERS = {
+  crop: 'Paddy (Rice)',
+  residue_type: 'Baled Straw',
+  condition: 'Dry',
+  state: 'Punjab',
+  district: 'Ludhiana',
+  min_qty: '50',
+  max_qty: '500',
+  max_price: '2500',
+  harvest_after: '2026-09-15'
+};
+
 export default function FindResidue() {
   const { currentUser } = useAuth();
 
-  // Filters
-  const [filters, setFilters] = useState({
-    crop: '', residue_type: '', condition: '', state: '', district: '',
-    min_qty: '', max_qty: '', max_price: '', harvest_after: ''
-  });
+  // Filters — Pre-filled with realistic demo values for smooth presentation
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [showFilters, setShowFilters] = useState(true);
 
   // Results
@@ -317,64 +326,65 @@ export default function FindResidue() {
   const [sending, setSending] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Load existing interests and run initial search on mount
+  // Load existing interests and run initial search on mount with demo values
   useEffect(() => {
-    handleSearch();
+    handleSearch(DEFAULT_FILTERS);
 
     getMyInterests().then(data => {
       setMyInterestIds((data || []).map(i => i.listing_id));
     }).catch(() => {});
   }, []);
 
-  const handleSearch = async () => {
+  const handleSearch = async (overrideFilters = null) => {
+    const activeFilters = overrideFilters || filters;
     setLoading(true);
     setError('');
     setSearched(true);
     try {
       const params = {};
-      if (filters.district) params.district = filters.district;
-      if (filters.max_price) params.max_price = filters.max_price;
-      if (filters.min_qty) params.min_qty = filters.min_qty;
+      if (activeFilters.district) params.district = activeFilters.district;
+      if (activeFilters.max_price) params.max_price = activeFilters.max_price;
+      if (activeFilters.min_qty) params.min_qty = activeFilters.min_qty;
       let rawResults = await getListings(params);
       let results = Array.isArray(rawResults) && rawResults.length > 0 ? [...rawResults] : [];
 
       // Client-side filtering for fields
-      if (filters.crop) {
-        results = results.filter(l => l.crop && (l.crop.toLowerCase().includes(filters.crop.toLowerCase()) || filters.crop.toLowerCase().includes(l.crop.toLowerCase())));
+      if (activeFilters.crop) {
+        results = results.filter(l => l.crop && (l.crop.toLowerCase().includes(activeFilters.crop.toLowerCase()) || activeFilters.crop.toLowerCase().includes(l.crop.toLowerCase())));
       }
-      if (filters.residue_type) {
-        results = results.filter(l => l.residue_type && l.residue_type.toLowerCase().includes(filters.residue_type.toLowerCase()));
+      if (activeFilters.residue_type) {
+        results = results.filter(l => l.residue_type && l.residue_type.toLowerCase().includes(activeFilters.residue_type.toLowerCase()));
       }
-      if (filters.condition) {
-        results = results.filter(l => l.condition && l.condition.toLowerCase() === filters.condition.toLowerCase());
+      if (activeFilters.condition) {
+        results = results.filter(l => l.condition && l.condition.toLowerCase() === activeFilters.condition.toLowerCase());
       }
-      if (filters.state) {
-        results = results.filter(l => l.state && l.state.toLowerCase() === filters.state.toLowerCase());
+      if (activeFilters.state) {
+        results = results.filter(l => l.state && l.state.toLowerCase() === activeFilters.state.toLowerCase());
       }
-      if (filters.district) {
-        results = results.filter(l => l.district && l.district.toLowerCase() === filters.district.toLowerCase());
+      if (activeFilters.district) {
+        results = results.filter(l => l.district && l.district.toLowerCase() === activeFilters.district.toLowerCase());
       }
-      if (filters.min_qty !== '' && !isNaN(Number(filters.min_qty))) {
-        results = results.filter(l => Number(l.quantity_tonnes) >= Number(filters.min_qty));
+      if (activeFilters.min_qty !== '' && !isNaN(Number(activeFilters.min_qty))) {
+        results = results.filter(l => Number(l.quantity_tonnes) >= Number(activeFilters.min_qty));
       }
-      if (filters.max_qty !== '' && !isNaN(Number(filters.max_qty))) {
-        results = results.filter(l => Number(l.quantity_tonnes) <= Number(filters.max_qty));
+      if (activeFilters.max_qty !== '' && !isNaN(Number(activeFilters.max_qty))) {
+        results = results.filter(l => Number(l.quantity_tonnes) <= Number(activeFilters.max_qty));
       }
-      if (filters.max_price !== '' && !isNaN(Number(filters.max_price))) {
-        results = results.filter(l => Number(l.asking_price_per_tonne) <= Number(filters.max_price));
+      if (activeFilters.max_price !== '' && !isNaN(Number(activeFilters.max_price))) {
+        results = results.filter(l => Number(l.asking_price_per_tonne) <= Number(activeFilters.max_price));
       }
-      if (filters.harvest_after && filters.harvest_after.trim() !== '') {
-        results = results.filter(l => l.harvest_date && l.harvest_date >= filters.harvest_after);
+      if (activeFilters.harvest_after && activeFilters.harvest_after.trim() !== '') {
+        results = results.filter(l => l.harvest_date && l.harvest_date >= activeFilters.harvest_after);
       }
 
       // If user searched with filters and 0 results match, dynamically synthesize authentic demo listings according to searched data values!
-      if (results.length === 0 && (filters.crop || filters.state || filters.district || filters.max_price || filters.min_qty || filters.residue_type)) {
-        const stateChosen = filters.state || (filters.district ? (Object.keys(DISTRICTS).find(s => DISTRICTS[s].includes(filters.district)) || 'Punjab') : 'Punjab');
-        const districtChosen = filters.district || (DISTRICTS[stateChosen] ? DISTRICTS[stateChosen][0] : 'Ludhiana');
-        const cropChosen = filters.crop || 'Paddy (Rice)';
-        const residueChosen = filters.residue_type || (cropChosen.includes('Wheat') ? 'Wheat Straw (Turi)' : cropChosen.includes('Cotton') ? 'Cotton Stalks' : cropChosen.includes('Mustard') ? 'Mustard Husk' : cropChosen.includes('Sugarcane') ? 'Sugarcane Trash' : 'Baled Straw');
-        const targetPrice = filters.max_price ? Math.max(1200, Math.min(parseFloat(filters.max_price), 2250)) : 2150;
-        const targetQty = filters.min_qty ? Math.max(parseFloat(filters.min_qty), 120) : (filters.max_qty ? Math.min(parseFloat(filters.max_qty), 450) : 340);
+      if (results.length === 0 && (activeFilters.crop || activeFilters.state || activeFilters.district || activeFilters.max_price || activeFilters.min_qty || activeFilters.residue_type)) {
+        const stateChosen = activeFilters.state || (activeFilters.district ? (Object.keys(DISTRICTS).find(s => DISTRICTS[s].includes(activeFilters.district)) || 'Punjab') : 'Punjab');
+        const districtChosen = activeFilters.district || (DISTRICTS[stateChosen] ? DISTRICTS[stateChosen][0] : 'Ludhiana');
+        const cropChosen = activeFilters.crop || 'Paddy (Rice)';
+        const residueChosen = activeFilters.residue_type || (cropChosen.includes('Wheat') ? 'Wheat Straw (Turi)' : cropChosen.includes('Cotton') ? 'Cotton Stalks' : cropChosen.includes('Mustard') ? 'Mustard Husk' : cropChosen.includes('Sugarcane') ? 'Sugarcane Trash' : 'Baled Straw');
+        const targetPrice = activeFilters.max_price ? Math.max(1200, Math.min(parseFloat(activeFilters.max_price), 2250)) : 2150;
+        const targetQty = activeFilters.min_qty ? Math.max(parseFloat(activeFilters.min_qty), 120) : (activeFilters.max_qty ? Math.min(parseFloat(activeFilters.max_qty), 450) : 340);
         const centerCoord = DISTRICT_COORDS[districtChosen] || { lat: 30.85, lon: 75.80 };
 
         results = [
@@ -516,9 +526,30 @@ export default function FindResidue() {
 
       {/* ─── Full-width Filter Card ─── */}
       <div className="card" style={{ marginBottom: 28, padding: 0, overflow: 'hidden' }}>
-        <div style={{ padding: '14px 20px', background: '#f0fdf4', borderBottom: '1px solid #d1fae5', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Filter size={16} color="#15803d" />
-          <span style={{ fontWeight: 700, color: '#15803d', fontSize: 14 }}>Search &amp; Filter Options</span>
+        <div style={{ padding: '14px 20px', background: '#f0fdf4', borderBottom: '1px solid #d1fae5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Filter size={16} color="#15803d" />
+            <span style={{ fontWeight: 700, color: '#15803d', fontSize: 14 }}>Search &amp; Filter Options</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => { setFilters(DEFAULT_FILTERS); handleSearch(DEFAULT_FILTERS); }}
+            style={{
+              background: '#ffffff',
+              border: '1px solid #86efac',
+              color: '#15803d',
+              borderRadius: 20,
+              padding: '4px 12px',
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4
+            }}
+          >
+            ⚡ Autofill Demo Values
+          </button>
         </div>
 
         <div style={{ padding: '24px 28px' }}>
@@ -587,11 +618,19 @@ export default function FindResidue() {
           </div>
 
           {/* Action Buttons */}
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+            <button 
+              type="button" 
+              className="btn btn-secondary" 
+              style={{ padding: '10px 18px', fontSize: 14, color: '#15803d', borderColor: '#86efac', background: '#f0fdf4', display: 'flex', alignItems: 'center', gap: 6 }}
+              onClick={() => { setFilters(DEFAULT_FILTERS); handleSearch(DEFAULT_FILTERS); }}
+            >
+              ⚡ Autofill Demo Values
+            </button>
             <button className="btn btn-secondary" style={{ padding: '10px 24px', fontSize: 14 }} onClick={handleReset}>
               <X size={15} style={{ marginRight: 6 }} /> Reset Filters
             </button>
-            <button className="btn btn-primary" style={{ padding: '10px 32px', fontSize: 14 }} onClick={handleSearch} disabled={loading}>
+            <button className="btn btn-primary" style={{ padding: '10px 32px', fontSize: 14 }} onClick={() => handleSearch()} disabled={loading}>
               {loading ? '🔍 Searching…' : <><Search size={15} style={{ marginRight: 6 }} />Search Listings</>}
             </button>
           </div>
